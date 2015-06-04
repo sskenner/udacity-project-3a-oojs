@@ -81,6 +81,520 @@ Later, a = 2 to look up the variable (LHS reference) and assign to it if found.
 Both LHS and RHS reference look-ups start at the currently executing scope, and if need be (that is, they don’t find what they’re looking for there), they work their way up the nested scope, one scope (floor) at a time, looking for the identifier, until they get to the global (top floor) and stop, and either find it[…]
 */
 
+// Ch 2. Lexical Scope
+/*
+“Review
+Lexical scope means that scope is defined by author-time decisions of where functions are declared. The lexing phase of compilation is essentially able to know where and how all identifiers are declared, and thus predict how they will be looked up during execution.
+Two mechanisms in JavaScript can “cheat” lexical scope: eval(..) and with. The former can modify existing lexical scope (at runtime) by evaluating a string of “code” that has one or more declarations in it. The latter essentially creates a whole new lexical scope (again, at runtime) by treating an object reference as a scope and that object’s properties as scoped identifiers.
+The downside to these mechanisms is that it defeats the engine’s ability to perform compile-time optimizations regarding scope look-up, because the engine has to assume pessimistically that such optimizations will be invalid. Code will run slower as a result of using either feature. Don’t use them.”
+*/
+
+/// Lex-time
+function foo(a) {
+  var b = a * 2;
+
+  function bar(c) {
+    console.log( a, b, c );
+  }
+
+  bar( b * 3 );
+}
+
+foo( 2 ); // 2, 4, 12
+
+//// Look-ups
+// “No matter where a function is invoked from, or even how it is invoked, its lexical scope is only defined by where the function was declared.”
+
+/// Cheating Lexical
+// “cheating lexical scope leads to poorer performance.”
+/*
+“eval
+
+The eval(..) function in JavaScript takes a string as an argument and treats the contents of the string as if it had actually been authored code at that point in the program.”
+*/
+function foo(str, a) {
+  eval( str ); //cheating!!
+  console.log( a, b );
+}
+
+var b = 2;
+
+foo( "var b = 3;", 1 ); // 1, 3
+/*
+“The string "var b = 3;" is treated, at the point of the eval(..) call, as code that was there all along. Because that code happens to declare a new variable b, it modifies the existing lexical scope of foo(..). In fact, as mentioned earlier, this code actually creates variable b inside of foo(..) that shadows the b that was declared in the outer (global) scope.
+When the console.log(..) call occurs, it finds both a and b in the scope of foo(..), and never finds the outer b. Thus, we print out “1, 3” instead of “1, 2” as would have normally been the case.”
+*/
+///
+/*
+“with
+
+The other frowned-upon (and now deprecated!) feature in JavaScript that cheats lexical scope is the with keyword.”
+*/
+// “with is typically explained as a shorthand for making multiple property references against an object without repeating the object reference itself each time.”
+var obj = {
+  a: 1,
+  b: 2,
+  c: 3
+};
+// more "tedious" to repeat "obj"
+obj.a = 2;
+obj.b = 3;
+obj.C = 4;
+// "easier" shorthand
+with (obj) {
+  a = 3;
+  b = 4;
+  c = 5;
+}
+
+// consider
+function foo(obj) {
+  with (obj) {
+    a = 2;
+  }
+}
+
+var o1 = {
+  a: 3
+};
+var o2 = {
+  b: 3
+};
+
+foo( o1 );
+console.log( o1.a ); // 2
+
+foo( o2 );
+console.log( o2.a ); // undefined
+console.log( a ); // 2-Oops, leaked global
+/*
+“we note a peculiar side-effect, the fact that a global variable a was created by the a = 2 assignment. How can this be?
+The with statement takes an object, one that has zero or more properties, and treats that object as if it is a wholly separate lexical scope, and thus the object’s properties are treated as lexically defined identifiers in that scope.”
+*/
+
+// Ch 3. Function Versus Block Scope
+// “Review
+// Functions are the most common unit of scope in JavaScript. Variables and functions that are declared inside another function are essentially “hidden” from any of the enclosing scopes, which is an intentional design principle of good software.
+// But functions are by no means the only unit of scope. Block scope refers to the idea that variables and functions can belong to an arbitrary block (generally, any { .. } pair) of code, rather than only to the enclosing function.
+// Starting with ES3, the try/catch structure has block scope in the catch clause.
+// In ES6, the let keyword (a cousin to the var keyword) is introduced to allow declarations of variables in any arbitrary block of code. if (..) { let a = 2; } will declare a variable a that essentially hijacks the scope of the if’s { .. } block and attaches itself there.
+// Though some seem to believe so, block scope should not be taken as an outright replacement of var function scope. Both functionalities co-exist, and developers can and should use both function-scope and block-scope techniques where respectively appropriate to produce better, more readable/maintainable code.”
+
+/// Scope from Functions
+// let's explore function scope and it's implications
+function foo(a) {
+  var b = 2;
+  // some code
+
+  function bar() {
+    // ...
+  }
+  // more code
+  var c = 3;
+
+}
+
+bar(); // fails
+console.log( a, b, c ); // all 3 fail
+
+/// Hiding in Plain Scope
+// possibly "dangerous"
+function doSomething(a) {
+  b = a + doSomethingElse( a * 2 );
+
+  console.log( b * 3 );
+}
+
+function doSomethingElse(a) {
+   return a - 1;
+}
+
+var b;
+
+doSomething( 2 ); // 15
+
+// more "proper"
+function doSomething(a) {
+  function doSomethingElse(a) {
+    return a - 1;
+  }
+
+  var b;
+
+  b = a + doSomethingElse( a * 2 );
+
+  console.log( b * 3 );
+}
+
+doSomething( 2 ); // 15
+
+//// Collision Avoidence
+function foo() {
+
+  function bar(a) {
+    var i = 3; // w/o "var"(declaring var locally) changing 'i' in enclosing scope's for loop
+    console.log( a + i );
+  }
+
+  for (var i=0; i<10; i++) {
+    bar( i * 2 ); // Oops, infinite loop ahead
+  }
+}
+
+foo();
+
+//// Global namespaces
+var MyReallyCoolLibrary = {
+  awesome: "stuff",
+  doSomething: function() {
+    // ...
+  },
+  doAnotherThing: function() {
+    // ...
+  }
+};
+
+///// Module management
+// see Ch5
+
+/// Functions as Scope
+// as function declaration
+var a = 2;
+
+function foo() {
+  var a = 3;
+  console.log( a ); // 3
+} // <-- and this
+foo(); // <-- and this
+
+console.log( a );
+
+// as function expression
+var a = 2;
+
+(function foo() { // insert this
+  var a = 3;
+  console.log( a ); // 3
+})(); // and this
+
+console.log( a ); // 2
+
+// function expressions as callback parameters
+setTimeout( function() {
+  console.log("i waited 1 second!");
+}, 1000 );
+
+// inline function expressions
+setTimeout( function timeoutHandler() { // has a name
+  console.log("i waited 1 second!");
+}, 1000 );
+
+// IIFE - immediately invoked function expression
+var a = 2;
+
+(function IIFE() {
+  var a = 3;
+  console.log( a ); // 3
+})();
+
+console.log( a ); // 2
+
+// IIFE variation1: invoke () pair moved inside the outer ()
+var a = 2;
+
+(function IIFE() {
+  var a = 3;
+  console.log( a ); // 3
+}()); // invoking () moved inside outer ()
+
+console.log( a ); // 2
+
+// IIFE variation2: are just function calls, & pass in args
+var a = 2;
+
+(function IIFE( global ) {
+  var a = 3;
+  console.log( a ); // 3
+  console.log( global.a );  // 2
+})( window );
+
+console.log( a ); // 2
+
+// IIFE variation3: name param undefined, and don't pass and values for arg
+undefined = true; // landmine set for other code! avoid
+
+(function IIFE( undefined ) {
+  var a;
+  if (a === undefined) {
+      console.log( "undefined is safe here" ); // 3
+  }
+})();
+
+// IIFE variation4: function to execute given 2nd, after invocation & params to pass to it .. UMD (Universal Module Definition) project
+var a = 2;
+
+(function IIFE( def ) {
+  def( window );
+})(function def( global ) {
+  var a = 3;
+  console.log( a ); // 3
+  console.log( global.a );  // 2
+});
+
+/// .Blocks as Scopes
+
+// common JS idiom
+for (var i=0; i<10; i++) {
+  console.log( i );
+}
+
+// declare vars as close as possible, as local as possible, to where they will be used
+var foo = true;
+
+if (foo) {
+  var bar = foo * 2;  // fake block scoping
+  bar = something( bar );
+  console.log( bar );
+}
+
+// try/catch: specify the var declaration in the catch clause of a try/catch to be blocke-scoped to the catch block
+try {
+  undefined();  // illegal operation to force an exception
+}
+catch (err) {
+  console.log( err ); // works!
+}
+console.log( err ); // ReferenceError: 'err' not found
+
+// let implicitly hijacks any block's scope for its var declaration
+var foo = true;
+
+if(foo) {
+  let bar = foo * 2;
+  bar = something( bar );
+  console.log( bar );
+}
+
+console.log( bar ); // ReferenceError
+
+// ..better ..
+var foo = true;
+
+if (foo) {
+  { // <-- explicit block
+    let bar = foo * 2;
+    bar = something( bar );
+    console.log( bar );
+  }
+}
+console.log( bar ); // ReferenceError
+
+// let will not hoist to the entire scope of the block they appear
+{
+  console.log( bar ); // ReferenceError!
+  let bar = 2;
+}
+
+// garbage collection
+function process(data) {
+  // ...
+}
+
+var someReallyBigData = {...};
+
+process( someReallyBigData );
+
+var btn = document.getElementById( "my_button" );
+
+btn.addEventListener( "click", function click(evt) {
+  console.log("button clicked");
+}, /*capturingPhase=*/false );
+
+///
+function process(data) {
+  // ...
+}
+// anything declared inside this block can go away after!
+{
+  var someReallyBigData = {...};
+
+  process( someReallyBigData );
+}
+var btn = document.getElementById( "my_button" );
+
+btn.addEventListener( "click", function click(evt) {
+  console.log("button clicked");
+}, /*capturingPhase=*/false );
+
+/// let loops
+for (let i=0; i<10; i++) {
+  console.log( i );
+}
+
+console.log( i ); // Reference error
+
+/// another way to illustrate the per-iteration binding behavior
+{
+  let j;
+  for (j=0; j<10; j++) {
+  let i = j;  // re-bound for each iteration!
+  console.log( i );
+  }
+}
+
+// but there can be gotchas when refactoring
+var foo = true, baz = 10;
+
+if (foo) {
+  var bar = 3;
+
+  if (baz > bar) {
+    console.log( baz );
+  }
+  // ...
+}
+
+// ..refactored as ..
+var foo = true, baz = 10;
+
+if (foo) {
+  var bar = 3;
+
+  // ...
+}
+
+if (baz > bar) {
+  console.log( baz );
+}
+
+// ...
+var foo = true, baz = 10;
+
+if (foo) {
+  let bar = 3;
+  if (baz > bar) {
+    console.log( baz ); // <-- dont forget 'bar' when moving!
+  }
+}
+
+// const
+var foo = true;
+
+if (foo) {
+  var a = 2;
+  const b = 3;  // blocked-scoped to the containing 'if'
+
+  a = 3;
+  b = 4;  // error!
+}
+
+console.log( a );
+console.log( b ); // ReferenceError!
+
+/// .Hoisting
+/*
+“Review
+We can be tempted to look at var a = 2; as one statement, but the JavaScript engine does not see it that way. It sees var a and a = 2 as two separate statements, the first one a compiler-phase task, and the second one an execution-phase task.
+What this leads to is that all declarations in a scope, regardless of where they appear, are processed first before the code itself is executed. You can visualize this as declarations (variables and functions) being “moved” to the top of their respective scopes, which we call hoisting.
+Declarations themselves are hoisted, but assignments, even assignments of function expressions, are not hoisted.
+Be careful about duplicate declarations, especially mixed between normal var declarations and function declarations—peril awaits if you do!”
+*/
+
+/// first snippet
+a = 2;  // var a;
+  // the first part is the compilation..
+var a;  // a = 2;
+  // the second part is the execution
+console.log( a );
+
+/// second snippet
+console.log( a ); // var a = 2;
+  // see above
+var a = 2;  // console.log( a );
+
+a = 2;
+/// if hoisting were to rearrange the logic .. no, no
+
+foo();
+
+function foo() {
+  console.log( a ); // undefined
+
+  var a = 2;
+}
+// > is actually..
+function foo() {
+  console.log( a ); // undefined
+
+  var a = 2;
+}
+foo();
+
+//// > The Compiler Strikes Again
+/// first snippet cont..
+var a;  // compilation
+a = 2;  // execution
+console.log( a );
+
+/// second snippet cont..
+var a;
+console.log( a );
+a = 2;
+
+///
+foo();
+
+function foo() {
+  console.log( a ); // undefined
+  var a = 2;
+}
+/// ..can be more accrately interpreted as ..
+function foo() {
+  var a;
+  console.log( a ); // undefined
+  a = 2;
+}
+foo();
+
+// .. function declarations are hoisted but function expressions are not
+foo(); // not ReferenceError, but TypeError!
+var foo = function bar() {
+  // ..
+};
+
+// name identifier not available in the closing scope
+foo();  // TypeError
+bar();  // ReferenceError
+
+var foo = function bar() {
+  // ..
+}
+/// ..can be more accrately interpreted as ..
+var foo;
+
+foo();  // TypeError
+bar();  // ReferneceError
+
+foo = function() {
+  var bar = ..self..
+  // ...
+}
+
+//// > Functions First
+foo();  // 1
+var foo;
+
+function foo() {
+  console.log( 1 );
+}
+
+foo = function() {
+  console.log( 2 );
+};
+
+/// ..can be more accrately interpreted (by engine) as ..
+
+
 ///////// end
 
 // > library.js /////////////////////
