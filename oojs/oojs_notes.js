@@ -522,7 +522,7 @@ function foo() {
 
   var a = 2;
 }
-// > is actually..
+// is actually..
 function foo() {
   console.log( a ); // undefined
 
@@ -530,7 +530,7 @@ function foo() {
 }
 foo();
 
-//// > The Compiler Strikes Again
+//// The Compiler Strikes Again
 /// first snippet cont..
 var a;  // compilation
 a = 2;  // execution
@@ -580,9 +580,10 @@ foo = function() {
   // ...
 }
 
-//// > Functions First
+//// Functions First
 foo();  // 1
 var foo;
+
 
 function foo() {
   console.log( 1 );
@@ -592,8 +593,144 @@ foo = function() {
   console.log( 2 );
 };
 
-/// ..can be more accrately interpreted (by engine) as ..
+/// ..can be more accrately interpreted (by Engine) as ..
+function foo() {
+  console.log( 1 );
+}
 
+foo();  // 1
+
+foo = function() {
+  console.log( 2 );
+};
+
+/// .. subsequent function declarations do iveride previous ones
+foo();  // 3
+
+function foo() {
+  console.log( 1 );
+}
+
+var foo = function() {
+  console.log( 2 );
+};
+
+function foo() {
+  console.log( 3 );
+}
+
+/// function declarations inside normal blocks typically hoist to the enclosing scope
+foo();  // "b"
+
+var a = true;
+if (a) {
+  function foo() { console.log("a"); }
+} else {
+  function foo() { console.log("b"); }
+}
+
+/// .Scope Closure
+/*
+Review
+Closure seems to the unenlightened like a mystical world set apart
+inside of JavaScript that only the few bravest souls can reach. But it’s
+actually just a standard and almost obvious fact of how we write code
+in a lexically scoped environment, where functions are values and can
+be passed around at will.
+Closure is when a function can remember and access its lexical scope
+even when it’s invoked outside its lexical scope.
+Closures can trip us up, for instance with loops, if we’re not careful to
+recognize them and how they work. But they are also an immensely
+powerful tool, enabling patterns like modules in their various forms.
+
+Modules require two key characteristics: 1) an outer wrapping function
+being invoked, to create the enclosing scope 2) the return value
+of the wrapping function must include reference to at least one inner
+function that then has closure over the private inner scope of the
+wrapper.
+Now we can see closures all around our existing code, and we have the
+ability to recognize and leverage them to our own benefit!
+*/
+
+///
+function foo() {
+  var a = 2;
+
+  function bar() {  // RHS reference look-up for "a"
+    console.log( a ); // 2
+  }
+
+  bar();
+}
+foo();
+
+// closure in full light
+function foo() {
+  var a = 2;
+  function bar() {  // bar() has lexical scope access to inner scope of foo()
+    console.log( a );
+  }
+  return bar; // passed as a value.. return function object itself that bar references
+}
+var baz = foo();
+
+baz();  // 2 -- closure observed
+
+// example of observing/exercising closure
+function foo() {
+  var a = 2;
+
+  function baz() {
+    console.log( a ); // 2
+  }
+
+  bar( baz );
+}
+var fn = foo();
+
+function bar(fn) {
+  fn(); // look ma, closure!
+}
+
+//.. example of indirect passings-around of functions
+var fn;
+
+function foo() {
+  var a = 2;
+
+  function baz() {
+    console.log( a );
+  }
+
+  fn = baz; // assign baz to global var
+}
+
+function bar() {
+  fn(); // look ma, closure!
+}
+
+foo();
+bar();
+
+//// .Now I Can See
+// academic and artificially constructed to illustrate using closure
+function wait(message) {
+  setTimeout( function timer() {
+    console.log( message );
+  }, 1000 );
+}
+
+wait( "Hello, closure!" );
+
+//.. or if using jQuery or any other JS framework
+function setupBot(name, selector) {
+  $( selector ).click( function activator() {
+    console.log( "Activating: " + name );
+  } );
+}
+
+setupBot( "Closure Bot 1", "#bot_1" );
+setupBot( "Closure Bot 2", "#bot_2" );
 
 ///////// end
 
