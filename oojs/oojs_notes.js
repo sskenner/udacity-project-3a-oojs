@@ -732,6 +732,61 @@ function setupBot(name, selector) {
 setupBot( "Closure Bot 1", "#bot_1" );
 setupBot( "Closure Bot 2", "#bot_2" );
 
+// <<>> .. passing in random callback function
+var a = 2;
+
+(function IIFE() {
+  console.log( a );
+})();
+
+//// .Loops and Closure
+// most common canonical ex used to illustrate closure
+for (var i=1; i<=5; i++) {
+  setTimeout( function timer() {
+    console.log( i );
+  }, i*1000 );
+} // .. doesnt count up.. why?
+
+// .. let's try:
+for (var i=1; i<=5; i++) {
+  (function() {
+    setTimeout( function timer() {
+      console.log( i );
+    }, i*1000 );
+  })();
+} // still nope
+
+// .. it needs its own var, w a copy of i var at ea iteration
+for (var i=1; i<=5; i++) {
+  (function() {
+    var j = i;
+    setTimeout( function timer() {
+      console.log( j );
+    }, j*1000 );
+  })();
+}
+
+// .. variation that some prefer
+for (var i=1; i<=5; i++) {
+  (function(j) {
+    setTimeout( function timer() {
+      console.log( j );
+    }, j*1000 );
+  })(i);
+}
+
+//// .Block Scoping Revisited
+// the let declar, hijacks a block and declares a var right in the block, essentially turns a block into a scope that we can close over
+for (var i=1; i<=5; i++) {
+  let j = i;  // yay, block-scope for closure!
+  setTimeout( function timer() {
+    console.log( j );
+  }, j*1000 );
+}
+
+//.. let declar used in the head of the for loop
+
+
 ///////// end
 
 // > library.js /////////////////////
