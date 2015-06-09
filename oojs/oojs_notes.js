@@ -784,7 +784,243 @@ for (var i=1; i<=5; i++) {
   }, j*1000 );
 }
 
-//.. let declar used in the head of the for loop
+//.. let declar used in the head of the for loop, which will declare var once for the loop and each iteration
+for (let i=1; i<=5; i++) {
+  setTimeout( function timer() {
+    console.log( i );
+  }, i*1000 );
+}
+
+//// .Modules
+function foo() {
+  var something = "cool"; // private data vars
+  var another = [1, 2, 3];
+
+  function doSomething() {  // inner functions w lexical scope (and thus closure!) over the inner scope foo()
+    console.log( something );
+  }
+
+  function doAnother() {
+    console.log( another.join( " ! " ) );
+  }
+}
+
+// .. but now consider .. this pattern called module .. most common called "revealing module"
+function CoolModule() {
+  var something = "cool";
+  var another = [1, 2, 3];
+
+  function doSomething() {
+    console.log( something );
+  }
+
+  function doAnother() {
+    console.log( another.join( " ! " ) );
+  }
+
+  return {
+    doSomething: doSomething,
+    doAnother: doAnother
+  };
+}
+
+var foo = CoolModule();
+
+foo.doSomething();  // cool
+foo.doAnother();  // 1 ! 2 ! 3
+
+/////////
+//http://benalman.com/news/2010/11/immediately-invoked-function-expression/
+/////////
+function makeCounter() {
+  // 'i' only accessible inside 'makeCounter'
+  var i = 0;
+
+  return function() {
+    console.log( ++i );
+  };
+}
+// 'counter' and 'counter2' ea have their own scoped 'i'
+
+var counter = makeCounter();
+counter();  // 1
+counter();  // 2
+
+var counter2 = makeCounter();
+counter2();  // 1
+counter2();  // 2
+
+i;  // Reference: 'i' is not defined.. only exists inside makeCounter
+
+// ..IIFE: accepted way to tell the parser to expect a function expression is to wrap it in parens. To immediately invo' a function expression, utilizing the functions's execution context to create 'privact'
+( function() { .. }() );  // recommended
+( function() { .. })();  // works
+
+// .. parens or coercing operators can be omitted (bc point of them is to disambiguate btw functino expressions and function declarartions) when the parser already expects an expression
+var i = function() { return 10; }();
+true && function() { .. }();
+0, function() { .. }();
+
+// .. if dont care about the return value or unclear code, prefix w uniary operator
+!function() { .. }();
+~function() { .. }();
+-function() { .. }();
++function() { .. }();
+
+// another variant
+new function(){ .. }
+new function(){ .. }() // only need parens if passing args
+
+/// .The Module Pattern
+// Create an anonymous function expression that gets invoked immediately, and assigns it "return value" to a var.. this approach "cuts out the middleman" of the named 'makeWhatever' function reference
+// ..parens should still be used as a matter of convention to help clarify that the var is being sent to the functions "result" and not the function itself
+var counter = (function() {
+  var i = 0;
+
+  return {
+    get: function() {
+      return i;
+    },
+    set: function( val ) {
+      i = val;
+    },
+    increment: function() {
+      return ++i;
+    }
+  };
+}());
+
+// 'counter' is an object w properties, which in this case happen to be methods
+counter.get();  // 0
+counter.set( 3 );
+counter.increment();  // 4
+counter.increment();  // 5
+
+counter.i;  // undefined ('i' is not a property of the returned object)
+i; // ReferneceError: i is not define.. only exists inside the closure
+
+/////////
+/////////
+
+var foo = (function CoolModule()  {
+  var something = "cool";
+  var another = [1, 2, 3];
+
+  function doSomething() {
+    console.log( something );
+  }
+
+  function doAnother() {
+    console.log( another.join( " ! ") );
+  }
+
+  return {
+    doSomething: doSomething,
+    doAnother: doAnother
+  };
+})();
+
+foo.doSomething(); // cool
+foo.doAnother(); // 1 ! 2 ! 3
+
+// modules, being just functions, can receive params
+function CoolModule(id) {
+  function identify() {
+    console.log( id );
+  }
+
+  return {
+    identify: identify
+  };
+}
+
+var foo1 = CoolModule( "foo 1" );
+var foo2 = CoolModule( "foo 2" );
+
+foo1.identify();  // "foo 1"
+foo2.identify();  // "foo 2"
+
+// .. another slight but powerful variation on module pattern is to name the obj being returned as the public API
+var foo = (function CoolModule(id) {
+  function change() {
+    // modifying public API
+    publicAPI.identify = identify2;
+  }
+
+  function identify1() {
+    console.log( id );
+  }
+
+  function identify2() {
+    console.log( id.toUpperCase() );
+  }
+
+  var publicAPI = {
+    change: change,
+    identify: identify1
+  };
+
+  return publicAPI;
+})( "foo module" );
+
+foo.identify();  // foo module
+foo.change();
+foo.identify();  // FOO MODULE
+
+/// .Modern Modules
+// module dependency loaders/managers essentially wrap up this pattern of module definition into a friendly API
+var MyModules = (function Manager() {
+  var modules = {};
+
+  function define(name, deps, impl) {
+    for (var i=0; i<deps.length; i++) {
+      deps[i] = modules[deps[i]];
+    }
+    // invoking the definition wrapper function for a module (passing in any dependencies), and storing the return value, the module's API, into an internal list of modules tracked by name
+    // with apply()/call() you can set the value of this, and invoke a function as a new method of an existing obj
+    modules[name] = impl.apply( impl, deps );
+  }
+
+  function get(name) {
+    return modules[name];
+  }
+
+  return {
+    define: define,
+    get: get
+  };
+})();
+// ..how it could be used to define some modules
+MyModules.define( "bar", [], function() {
+  function hello(who) {
+    return "let me introduce: " + who;
+  }
+
+  return {
+    hello: hello
+  };
+} );
+
+MyModules.define( "foo", ["bar"], function(bar) {
+  var hungry = "hippo";
+
+  function awesome() {
+    console.log( bar.hello( hungry ).toUpperCase() );
+  }
+
+  return {
+    awesome: awesome
+  };
+} );
+
+var bar = MyModules.get( "bar" );
+var foo = MyModules.get( "foo" );
+
+console.log(
+  bar.hello( "hippo" )
+);  // let me introduce: hippo
+
+foo.awesome();  // LET ME INTRODUCE: HIPPO
 
 
 ///////// end
