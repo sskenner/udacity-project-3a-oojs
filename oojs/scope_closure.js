@@ -289,10 +289,22 @@ mixin( {
 }, Car );
 
 // ... Parasitic inheritance
+// "traditional js class" 'Vehicle'
+function Vehicle() {
+  this.engines = 1;
+}
+Vehicle.prototype.ignition = function() {
+  console.log( "turning on my engine." );
+};
+Vehicle.prototype.drive = function() {
+  this.ignition();
+  console.log( "steering and moving forward!" );
+};
 
+// "parasitic class" 'Car'
+function Car() {
 
-
-
+}
 
 
 
