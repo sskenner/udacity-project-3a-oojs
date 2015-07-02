@@ -3,7 +3,7 @@ function CoolModule(id)  {
   function identify()  {
     console.log(id);
   }
-  
+
   return {
     identify: identify
   };
@@ -20,20 +20,20 @@ var foo = (function CoolModule(id)  {
     // modifying the public API
     publicAPI.identify = identify2;
   }
-  
+
   function identify1() {
     console.log( id );
   }
-  
+
   function identify2() {
     console.log( id.toUpperCase() );
   }
-  
+
   var publicAPI = {
     change: change,
     identify: identify1
   };
-  
+
   return publicAPI;
 })( "foo module " );
 
@@ -148,6 +148,154 @@ wrapper.
 Now we can see closures all around our existing code, and we have the
 ability to recognize and leverage them to our own benefit!
 */
+
+// .ch4. mixing (up) "class" objects
+// .. class theory
+// ... "class" design patterns
+class CoolGuy {
+  specialTrick = nothing
+
+  CoolGuy( trick ) {
+    specialTrick = trick
+  }
+
+  showOff() {
+    output( "here's my trick: ", specialTrick )
+  }
+}
+// to make a CoolGuy instance, call the class constructor
+Joe = new CoolGuy( "jumping rope" )
+
+Joe.showOff() // here's my trick: jumping rope
+
+// ... Class Inheritance
+class Vehicle {
+  engines = 1
+
+  ignition() {
+    output( "turning on my engine." );
+  }
+
+  drive() {
+    ignition();
+    output( "steering and moving forward!")
+  }
+}
+
+class Car inherits Vehicle {
+  wheels = 4
+
+  drive() {
+    inherited:drive()
+    output( "rolling on all ", wheels, " wheels!")
+  }
+}
+
+class SpeedBoat inherits Vehicle {
+  engines = 2
+
+  ignition() {
+    output( "turning on my ", engines, " engines." )
+  }
+
+  pilot() {
+    inherited:drive()
+    output( "speeding through the water with ease!" )
+  }
+}
+
+// ... Polymorphism
+// > the idea that any method can (relatively) reference (look one level up) another method at a higher level of the inheritence hierarchy
+// > class inheritance implies copies
+
+// ... Multiple Inheritance
+// > see the diamond problem
+
+// .. Mixins
+// > no "classes" in JS to instantiate, only objects.. objects dont get copied to other objects, they get linked together.. in JS: faking the missing copy behavior of classes = mixins
+
+// ... Explicit Mixins
+// > extend(..) = mixin(..)
+// simplified 'mixin(..)' example:
+function mixin( sourceObj, targetObj ) {
+  for (var key in sourceObj) {
+    // only copy if not already present
+    if (!(key in targetObj)) {
+      targetObj[key] = sourceObj[key];
+    }
+  }
+  return targetObj;
+}
+var Vehicle = {
+  engines: 1,
+
+  ignition: function() {
+    console.log( "turning on my engine." );
+  },
+
+  drive: function() {
+    this.ignition();
+    console.log( "steering and moving forward!" );
+  }
+};
+
+var Car = mixin( Vehicle, {
+  wheels: 4,
+
+  drive: function() {
+    Vehicle.drive.call( this );
+    console.log(
+      "rolling on all " + this.wheels + " wheels!"
+    );
+  }
+});
+
+// ... Mixing copies
+// simplifies 'mixin()' example:
+function mixin( sourceObj, targetObj ) {
+  for (var key in sourceObj) {
+    // only copy if not present
+    if (!(key in targetObj)) {
+      targetObj[key] =sourceObj[key];
+    }
+  }
+
+  return targetObj;
+}
+
+// > makeing copies first before specifying the Car-specific contents, then can omit the check against targetObj, but is more clunky and less efficient
+// alternate mixin, less "safe" to overwrites
+function mixin( sourceObj, targetObj ) {
+  for (var key in sourceObj) {
+    targetObj[key] = sourceObj[key];
+  }
+
+  return targetObj;
+}
+
+var Vehicle = {
+  // ...
+};
+
+// first, create an empty obj with Vehicle's stuff copied in
+var Car = mixin( Vehicle, {} );
+// now copy intended contents into Car
+mixin( {
+  wheels: 4,
+
+  drive: function() {
+    // ...
+  }
+}, Car );
+
+// ... Parasitic inheritance
+
+
+
+
+
+
+
 
 
 
