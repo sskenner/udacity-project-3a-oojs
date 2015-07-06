@@ -673,7 +673,7 @@ Bar.prototype = Object.create( Foo.prototype );
 // ES6+ - modifies existing 'Bar.prototype'
 Object.setPrototypeOf( Bar.prototype, Foo.prototype );
 
-// ..Inspecting "Class" Relationships
+// ...Inspecting "Class" Relationships
 function Foo() {
   // ...
 }
@@ -687,12 +687,57 @@ console.log(a instanceof Foo); // true
 // ridiculouness
 // helper utility to see if 'o1' is related to (delegates to) 'o2'
 function isRelatedTo(o1, o2) {
-  function F() {
-    F.prototype = o2;
-    return o1 instanceof F;
+  function F() {}
+  F.prototype = o2;
+  return o1 instanceof F;
+}
+
+var a = {};
+var b = Object.create( a );
+  
+console.log(isRelatedTo( b, a ));  // true
+
+
+// cleaner approach to [[Prototype]] reflection is:
+Foo.prototype.isPrototypeOf( a );  // true
+
+// just need two objects to inspect the relationship btw them:
+// simply: does b appear anywhere in c's [[Prototype]] chain?
+b.isPrototypeOf( c );
+// retrieve the [[Prototype]] of an object
+Object.getPrototypeOf( a ) === Foo.prototype; // true
+// nonstandard alt way to access the internal [[Prototype]]
+a.__proto__ === Foo.prototype; // true
+
+// .__proto__ implementation
+Object.defineProperty( Object.prototype, "__proto__", {
+  get: function() {
+    return Object.getPrototypeOf( this );
+  },
+  set: function(o) {
+    // setPrototypeOf(..) as of ES6
+    Object.setPrototypeOf( this, o );
+    return o;
   }
+});
+
+// ...Object Links
+// ..Create()ing Links
+var foo = {
+  something: function() {
+    console.log( "tell me something good..." );
+  }
+};
+
+var bar = Object.create( foo );
+
+bar.something(); // tell me something good
   
-  var a = {};
-  var b = Object.create( b, a );
   
-  console.log(isRelatedTo( b, a ));  // true
+  
+  
+  
+  
+  
+  
+  
