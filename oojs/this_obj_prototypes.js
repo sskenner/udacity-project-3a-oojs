@@ -732,12 +732,116 @@ var foo = {
 var bar = Object.create( foo );
 
 bar.something(); // tell me something good
+
+// ...Object.create() polyfill
+// additional functionality:
+if(!Object.create)  {
+  Object.create = function(o) {
+    function F(){}
+    F.prototype = o;
+    return new F();
+  };
+}
+
+///
+var anotherObject = {
+  a: 2
+};
+
+var myObject = Object.create( anotherObject, {
+  b: {
+    enumerable: false,
+    writable: true,
+    configurable: false,
+    value: 3
+  },
+  c: {
+    enumerable: true,
+    writable: false,
+    configurable: false,
+    value: 4
+  }
+});
+
+myObject.hasOwnProperty( "a" ); // false
+myObject.hasOwnProperty( "b" ); // true
+myObject.hasOwnProperty( "c" ); // true
+
+myObject.a; // 2
+myObject.b; // 3
+myObject.c; // 4
+
+// instead of polyfilling, can use/define own custom utility:
+function createAndLinkObject(o) {
+  function F(){}
+  F.prototype = o;
+  return new F();
+}
+
+var anotherObject = {
+  a: 2
+};
+
+var myObject = createAndLinkObject( anotherObject );
+
+myObject.a; // 2
+
+// ..Links as Fallbacks?
+var anotherObject = {
+  cool: function() {
+    console.log( "cool!" );
+  }
+};
+
+var myObject = Object.create:( anotherObject );
+
+myObject.cool(); // "cool!"
   
-  
-  
-  
-  
-  
-  
-  
-  
+///
+var anotherObject = {
+  cool: function() {
+    console.log( "cool!" );
+  }
+};
+
+var myObject = Object.create:( anotherObject );
+
+myObject.doCool = function() {
+  this.cool(); // internal delagation!
+};
+
+myObject.doCool(); // "cool!"
+
+/*
+Review
+When attempting a property access on an object that doesn’t have that
+property, the object’s internal [[Prototype]] linkage defines where the [[Get]] operation (see Chapter 3) should look next. This cascading
+linkage from object to object essentially defines a “prototype chain”
+(somewhat similar to a nested scope chain) of objects to traverse for
+property resolution.
+All normal objects have the built-in Object.prototype as the top of
+the prototype chain (like the global scope in scope lookup), where
+property resolution will stop if not found anywhere prior in the chain.
+toString(), valueOf(), and several other common utilities exist on
+this Object.prototype object, explaining how all objects in the language
+are able to access them.
+The most common way to get two objects linked to each other is using
+the new keyword with a function call, which among its four steps (see
+Chapter 2) creates a new object linked to another object.
+The “another object” that the new object is linked to happens to be the
+object referenced by the arbitrarily named .prototype property of the
+function called with new. Functions called with new are often called
+“constructors,” despite the fact that they are not actually instantiating
+a class as constructors do in traditional class-oriented languages.
+While these JavaScript mechanisms can seem to resemble “class instantiation”
+and “class inheritance” from traditional class-oriented
+languages, the key distinction is that in JavaScript, no copies are made.
+Rather, objects end up linked to each other via an internal [[Prototype]] chain.
+For a variety of reasons, not the least of which is terminology precedent,
+“inheritance” (and “prototypal inheritance”) and all the other
+OO terms just do not make sense when considering how JavaScript
+actually works (not just applied to our forced mental models).
+Instead, “delegation” is a more appropriate term, because these relationships
+are not copies but delegation links.
+*/
+
