@@ -845,3 +845,68 @@ Instead, “delegation” is a more appropriate term, because these relationship
 are not copies but delegation links.
 */
 
+// .Ch6: Behavior Delegation
+// "all about objects being linked to other objects"
+
+// ..Toward Delegation-Oriented Design
+// ...Class Theory
+// loose pseudocode
+class Task {
+  id;
+  
+  // constructor 'Task()'
+  Task(ID) {
+    id = ID;
+  }
+
+  outputTask() {
+    output( id );
+  }
+}
+
+class XYZ inherits Task {
+  label;
+  
+  // constructor 'XYZ()'
+  XYZ(ID, Label) {
+    super( ID );
+    label = Label;
+  }
+  
+  outputTask() {
+    super();
+    output( label );
+  }
+}
+
+class ABC inherits Task {
+  // ...
+}
+
+// ..Delegation Theory
+// behavior delegation instead of classes
+Task = {
+  setID:  function(ID) {
+            this.id = ID;
+          },
+  outputID: function() {
+              console.log( this.id );
+            }
+};
+
+// make 'XYZ' delegate to 'Task'
+XYZ = Object.create( Task );
+
+XYZ.prepareTask = function(ID,Label)  {
+                    this.setID( ID );
+                    this.label = Label;
+                  };
+
+XYZ.outputTaskDetails = function() {
+                          this.outputID();
+                          console.log( this.label );
+                        };
+
+// ABC = Object.create( Task );
+// ABC ... = ...
+// OLOO - Objects Linked to Other Objects
