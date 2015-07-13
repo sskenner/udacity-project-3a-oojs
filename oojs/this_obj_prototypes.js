@@ -1403,8 +1403,60 @@ Bar.prototype = Object.create( Foo.prototype );
 
 var b1 = new Bar( "b1" );
 // various checks might need to perform for the above
+// relating 'Foo' and 'Bar' to each other
+Bar.prototype instanceof Foo; // true
+Object.getPrototypeOf( Bar.prototype ) === Foo.prototype; // true
+Foo.prototype.isPrototypeOf( Bar.prototype ); // true
 
+// relating 'b1' to both 'Foo' and 'Bar'
+b1 instanceof Foo; // true
+b1 instanceof Bar; // true
+Object.getPrototypeOf( b1 ) === Bar.prototype; // true
+Foo.prototype.isPrototypeOf( b1 ); // true
+Bar.prototype.isPrototypeOf( b1 ); // true
 
+// duck typing
+if (a1.something) {
+  a1.somethin();
+}
 
+// OLOO-style code type introspection
+var Foo = { /* .. */ };
+
+var Bar = Object.create( Foo );
+Bar ...
+
+var b1 = Object.create( Bar );
+///
+// relating to 'Foo' and 'Bar' to each other
+Foo.isPrototypeOf( Bar ); // true
+Object.getPrototypeOf( Bar ) === Foo; // true
+
+// relating 'b1' to both 'Foo' and 'Bar'
+Foo.isPrototypeOf( b1 ); // t
+Bar.isPrototypeOf( b1 ); // t
+Object.getPrototypeOf( b1 ) === Bar; // t
+
+/*
+Review
+Classes and inheritance are a design pattern you can choose, or not
+choose, in your software architecture. Most developers take for granted
+that classes are the only (proper) way to organize code, but here we’ve
+seen there’s another less-commonly talked about pattern that’s actually
+quite powerful: behavior delegation.
+Behavior delegation suggests objects as peers of each other, which delegate
+among themselves, rather than parent and child class relationships.
+JavaScript’s [[Prototype]] mechanism is, by its very designed
+nature, a behavior delegation mechanism. That means we can either
+choose to struggle to implement class mechanics on top of JS (see
+Chapters 4 and 5), or we can just embrace the natural state of [[Pro
+totype]] as a delegation mechanism.
+When you design code with objects only, not only does it simplify the
+syntax you use, but it can actually lead to simpler code architecture
+design.
+OLOO (objects linked to other objects) is a code style that creates and
+relates objects directly without the abstraction of classes. OLOO quite
+naturally implements [[Prototype]]-based behavior delegation.
+*/
 
 
