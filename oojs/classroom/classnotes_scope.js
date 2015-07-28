@@ -282,18 +282,152 @@ foo( 2 ); // 2, 4, 12
 // ..Look-ups
 // scope look-ups stops once it finds the first match.. the inner identifier "shadows" the outer identifier
 
-
 // >>> [end reference]
 
+// ..Lexical Scope (cont.)
+var hero = aHero();
+var newSaga = function() {
+  var foil = aFoil();
+  var saga = function() {
+    var deed = aDeed();
+    log(hero+deed+foil);
+  };
+};
+newSaga();
+newSaga();
+//log(hero);
 
+// ..In-Memory Data Stores
+// Execution Contexts
+var hero = aHero();
+var newSaga = function() {
+  var foil = aFoil();
+  var saga = function() {
+    var deed = aDeed();
+    log(hero+deed+foil);
+  };
+  saga();
+  saga();
+};
+newSaga();
+newSaga();
 
+// ..In-Memory Scopes vs In-Memory Objects
+// ..Predicting Execution Context Output
+// ..Building Multiple Execution Contexts
+// ..Continuing Output Predictions
 
+// .Closures
+// ..Retaining Access to Functions
+var sagas = [];
+var hero = aHero();
+var newSaga = function() {
+  var foil = aFoil();
+  sagas.push(function(){
+    var deed = aDeed();
+    log(hero+deed+foil);
+  });
+};
+newSaga();
+sagas[0]();
+sagas[0]();
+newSaga();
+// ..Predicting Execution Contexts
+// ..Prediction Closure Output
 
+      ////////// [begin "Scope Closure" reference] //////////
 
+// .Scope Closure
+// ..Nitty Gritty
+// Closure is when a function is able to remember and access its lexical scope even when that function is executing outside its lexical scope
+function foo() {
+  var a = 2;
+  
+  function bar() {
+    console.log( a ); // 2
+  }
+  
+  bar();
+}
 
+foo();
 
+// closure in full light
+function foo() {
+  var a = 2;
+  
+  function bar() {
+    console.log( a );
+  }
+  
+  return bar;
+}
 
+var baz = foo();
 
+baz(); // 2 -- whoa, closure was just observed, man
+
+// Closure lets the function (bar()) continue to access the lexical scope it was defined in at author time
+
+//.. any of the various ways that functions can be passed around as values, and indeed invoked in other locations, are all examples of observing/exercising closure
+
+//var fn;
+
+function foo(){
+  var a=2;
+  
+  function baz(){
+    console.log(a); // 2
+  }
+  
+  bar(baz);
+}
+
+function bar(fn){
+  fn(); // look ma, i saw closure 
+// ?? why recieve TypeError: undefined is not a function
+}
+
+// ..passings-around of functions can be indirect, too
+var fn;
+
+function foo(){
+  var a=2;
+  
+  function baz(){
+    console.log(a);
+  }
+  
+  fn = baz; // assign baz to global var
+}
+
+function bar(){
+  fn(); // look ma, i saw closure 
+}
+
+foo();
+
+bar();
+
+      ////////// [end "Scope Closure" reference] //////////
+
+// ..Prediction Closure Output (cont)
+var sagas = [];
+var hero = aHero();
+var newSaga = function() {
+  var foil = aFoil();
+  sagas.push(function(){
+    var deed = aDeed();
+    log(hero+deed+foil);
+  });
+};
+newSaga();
+sagas[0]();
+sagas[0]();
+newSaga();
+sagas[0]();
+sagas[1]();
+sagas[0]();
 
 
 
