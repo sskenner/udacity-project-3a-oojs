@@ -1,6 +1,4 @@
-// *OOJS
-// .Prototype Chains
-// ..Prototype Chains
+c
 // ..Property Lookup..1-time property copying
 var gold = {a:1};
 console.log(gold.a); // 1
@@ -100,6 +98,50 @@ console.log(Object.getPrototypeOf({}) === Object.prototype);
 console.log(Object.getPrototypeOf(Object.prototype));
 //> null
 
+///
+console.log(Object.getPrototypeOf(isNAN) === Function.prototype);
+//> true
+console.log(Object.getPrototypeOf([]) === Array.prototype);
+//> true
+
+///
+var protoRabbit = {
+  speak: function(line) {
+    console.log("the " + this.type + " rabbit says '" + line + "'");
+  }
+};
+var killerRabbit = Object.create(protoRabbit);
+killerRabbit.type = "killer";
+killerRabbit.speak("SKREEEE!");
+
+// .Constructors
+function Rabbit(type) {
+  this.type = type;
+}
+
+var killerRabbit = new Rabbit("killer");
+var blackRabbit = new Rabbit("black");
+console.log(blackRabbit.type)
+//> black
+
+Rabbit.prototype.speak = function(line) {
+  console.log("The " + this.type + " rabbit says '" + line + "'");
+};
+blackRabbit.speak("Doom...");
+//> The black rabbit says 'Doom...'
+
+// .Overriding derived properties
+Rabbit.prototype.teeth = "small";
+console.log(killerRabbit.teeth);
+//> small
+killerRabbit.teeth = "long, sharp, and bloody";
+console.log(killerRabbit.teeth);
+//> long, sharp, and bloody
+console.log(blackRabbit.teeth);
+//> small
+console.log(Rabbit.prototype.teeth);
+//> small
+
 /*
 END refernce to EJSITP: Prototypes
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -127,7 +169,7 @@ Employee.prototype.constructor = Employee;
 
 Employee.prototype.greet = function() {
   if (this.canTalk) {
-    console.log('hi, i am' + this.name + ', the ' + this.title);
+    console.log('hi, i am ' + this.name + ', the ' + this.title);
   }
 };
 
@@ -166,7 +208,7 @@ END refernce to MDN: Object.prototype
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 */
 
-
+//??????????????????????????
 /*
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 BEGIN refernce to YDKJS: Ch5 Prototypes
@@ -179,3 +221,34 @@ BEGIN refernce to YDKJS: Ch5 Prototypes
 END refernce to YDKLS: Ch5 Prototypes
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 */
+
+// ..The object prototype (cont.)
+rose.toString();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
