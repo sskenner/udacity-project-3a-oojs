@@ -1,15 +1,27 @@
 var Car = function(loc){
-  var obj = Object.create(Car.methods);
+  var obj = Object.create(Car.prototype);
   obj.loc = loc;
   return obj;
 };
 
-Car.methods = {
-  move: function(){
-    this.loc++;
-  }
+Car.prototype.move = function(){
+  this.loc++;
 };
 
+
+
+///
+// var Car = function(loc){
+//   var obj = Object.create(Car.methods);
+//   obj.loc = loc;
+//   return obj;
+// };
+
+// Car.methods = {
+//   move: function(){
+//     this.loc++;
+//   }
+// };
 
 ///
 // var Car = function(loc){
