@@ -1,0 +1,442 @@
+<!-- *HTML Canvas -->
+<!-- .HTML5 Canvas Basics -->
+<!-- ..Favorite Meme -->
+<!-- ..Creating a canvas -->
+<!-- ..Coordinate System -->
+
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  </head>
+    <body>
+      <canvas id="c" width="200" height="200"></canvas>
+
+      <script>
+        var c = document.querySelector("#c");
+        var ctx = c.getContext("2d");
+
+        var image = new Image();
+
+        image.onload = function() {
+          console.log("Loaded image");
+          ctx.drawImage(image, 0, 0, c.width, c.height);
+        }
+
+        image.src = "fire-hands.jpg";
+
+      </script>
+    </body>
+</html>
+
+<!-- ..Create a local webserver -->
+<!--
+In the previous morsel, we received the following error message because we weren't directly hosting the images we wanted to display.
+
+Uncaught SecurityError: Failed to execute 'toDataURL' on
+'HTMLCanvasElement': Tainted canvases may not be exported.
+
+There are couple of ways to get around this error and one (optionally) is to start a local web server.
+
+Using Python SimpleHTTPServer
+
+The simplest way is to use SimpleHTTPServer if you already have Python installed.
+
+Python comes already installed on most Mac OS X and Linux computers. In a terminal window, change to the directory that has your HTML files and run the following command:
+
+python -m SimpleHTTPServer
+
+After it starts, you can navigate to http://0.0.0.0:8000/index.html
+
+Using MAMP / MAMP Pro
+
+MAMP is an integrated server environment containing executables for running a web server, a database, and several programming languages. MAMP stands for Mac OS X, Apache, MySQL, and PHP/Perl/Python. Though it was originally developed for the Mac, there are versions that run on Windows.
+
+After installing MAMP, open it and start the server.
+
+Go to settings and set the directory to where you have saved your HTML files.
+
+Navigate to http://localhost:8888/MAMP/index.html
+ -->
+
+<!-- ..Drawing Rectangles -->
+
+<!-- ..Paths -->
+
+<!-- ..Moving Objects in a Canvas -->
+
+<!--
+So far, we’ve been drawing everything using exact coordinates. This is fine for a couple shapes but breaks down if you need to draw a bunch of objects.
+
+Canvas2D allows you to translate (move), rotate, or scale objects.
+Scaling
+
+scale(x,y) multiplies the x and y values by a given factor so
+
+ctx.scale(2,3);
+
+will make all values twice as large on the x axis and three times as large on the y axis.
+Translation
+
+translate(x,y) moves all subsequent draw commands by x number of pixels on horizontally and y pixels vertically.
+
+ctx.translate(20,40); moves all elements drawn after it 20 pixels to the rights and 40 pixels down.
+Rotation
+
+ctx.rotate(angleRadians) rotates an object a certain number of radians (generally) about its center. You probably may have learned about radians in school but here's a handy formula to convert a value from degrees to radians.
+
+radians = degrees * (Math.PI/180)
+
+Don't ask us why everything in Computer Graphics uses radians. We have no idea. :)
+Order of operations
+
+You should generally scale objects first, rotate them next, and then finally translate last. There are times when you'd want to rotate around an arbitrary point instead of an object's center, that's out of scope for this lesson.
+
+It’s important to note that whatever transformations apply for all subsequent objects until you reverse them.
+ -->
+
+<!-- BEGIN reference- http://www.sitepoint.com/html5-canvas-tutorial-introduction/ -->
+<!--.HTML5 Canvas Tutorial: An Introduction-->
+<!--..Canvas Rendering Contexts-->
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+  </head>
+    <body>
+      <canvas id="exampleCanvas" width="500" height="300">
+        <!-- OPTION 1: leave a message here if browser doesn't support canvas -->
+          <p>your browser doesn't currently support HTML5 Canvas. Please check 'caniuse.com/#feat=canvas' for information on browser support for canvas.</p>
+        <!-- OPTION 2: put fallback content (text, image, Flash, etc.) if the browser doesn't support canvas -->
+      </canvas>
+
+      <script>
+        var canvas = document.getElementById('exampleCanvas'),
+            context = canvas.getContext('2d');
+            
+            // ..
+      </script>
+    </body>
+</html>
+
+<!--..HTML5 canvas element size vs. drawing surface size-->
+<!--..Understanding the Canvas Coordinate System-->
+
+<!--.Basic Canvas Examples-->
+<!--..Drawing Lines-->
+<script>
+  var canvas = document.getElementById('exampleCanvas'),
+    context = canvas.getContext('2d');
+
+  context.beginPath();
+  context.moveTo(50, 50);
+  context.lineTo(250, 150);
+  context.stroke();
+</script>
+
+<!--..Draw Rectangle-->
+<script>
+  var canvas = document.getElementById('exampleCanvas'),
+    context = canvas.getContext('2d');
+
+  context.beginPath();
+  context.moveTo(50, 50);
+  context.lineTo(250, 150);
+  context.stroke();
+</script>
+
+<!--..Draw Text-->
+<script>
+  context.font = 'italic 40pt Calibri, sans-serif';
+  context.fillText('hello world', 50, 50);
+</script>>
+
+<!-- END reference- http://www.sitepoint.com/html5-canvas-tutorial-introduction/ -->
+
+<!-- BEGIN reference- https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial -->
+<!--*Canvas Tutorial-->
+<!--**Basic usage of canvas-->
+<!--.The <canvas> element-->
+<canvas id="tutorial" width="150" height="150"></canvas>
+
+<!--..Fallback Content-->
+<!--..Required </canvas> tag-->
+
+<!--.The rendering context-->
+<script>
+  var canvas = document.getElementById('tutorial'),
+      ctx = canvas.getContext('2d');
+</script>>
+
+<!--.Checking for support-->
+<script>
+  var canvas = document.getElementById('tutorial'),
+      if (canvas.getContext){
+        var ctx = canvas.getContext('2d');
+        // drawing code here
+      } else {
+        // canvas-unsupported code here
+      }
+</script>>
+
+<!--.A Skeleton Template-->
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>canvas tutorial</title>
+    <script type="text/javascript">
+      function draw(){
+        var canvas = document.getElementById('tutorial');
+        if (canvas.getContext){
+          var ctx = canvas.getContext('2d');
+        }
+      }
+    </script>
+    <style type="text/css">
+      canvas { boder: 1px solid black; }
+    </style>
+  </head>
+  <body onload="draw();">
+    <canvas id="tutorial" width="150" height="150"></canvas>
+  </body>
+</html>
+
+<!--.A simple example-->
+
+  <!-- BEGIN reference- http://www.w3schools.com/tags/canvas_fillstyle.asp -->
+  <script>
+    var c=document.getElementById("myCanvas");
+    var ctx=c.getContext("2d");
+    ctx.fillStyle="#FF0000";
+    ctx.fillRect(20,20,150,100);
+  </script>
+  <!--///-->
+  <script>
+    var c=document.getElementById("myCanvas");
+    var ctx=c.getContext("2d");
+    var my_gradient=ctx.createLinearGradient(0,0,0,170);
+    my_gradient.addColorStop(0,"black");
+    my_gradient.addColorStop(1,"white");
+    ctx.fillStyle=my_gradient;
+    ctx.fillRect(20,20,150,100);
+  </script>
+  <!-- END reference- http://www.w3schools.com/tags/canvas_fillstyle.asp -->
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <!--<title>canvas tutorial:simple ex.</title>-->
+    <script type="application/javascript">
+      function draw(){
+        var canvas = document.getElementById('canvas');
+        if (canvas.getContext){
+          var ctx = canvas.getContext('2d');
+
+          ctx.fillStyle = "rgb(200,0,0)";
+          ctx.fillRect(10,10,55,50);
+
+          ctx.fillStyle = "rgba(0, 0, 200, 0.5)";
+          ctx.fillRect(30, 30, 55, 50);
+        }
+      }
+    </script>
+  </head>
+  <body onload="draw();">
+    <canvas id="canvas" width="150" height="150"></canvas>
+  </body>
+</html>
+
+<!--**Drawing shapes w canvas-->
+<!--.The grid-->
+<!--.Drawing rectangles-->
+<!--..Rectangular shape example-->
+<script>
+  function draw(){
+    var canvas = document.getElementById('tutorial');
+    if (canvas.getContext){
+      var ctx = canvas.getContext('2d');
+      
+      ctx.fillRect(25,25,100,100);
+      ctx.clearRect(45,45,60,60);
+      ctx.strokeRect(50,50,50,50);
+    }
+  }
+</script>
+
+<!--.Drawing paths-->
+<!--..Drawing a triangle-->
+<script>
+  function draw(){
+    var canvas = document.getElementById('canvas');
+    if (canvas.getContext){
+      var ctx = canvas.getContext('2d');
+
+      var path=new Path2D();
+      path.moveTo(75,50);
+      path.lineTo(100,75);
+      path.lineTo(100,25);
+      ctx.fill(path);
+    }
+  }
+</script>
+
+<!--..Moving the pen-->
+<script>
+  function draw(){
+    var canvas = document.getElementById('canvas');
+    if (canvas.getContext) {
+      var ctx = canvas.getContext('2d');
+
+      var path=new Path2D();
+      path.arc(75,75,50,0,Math.PI*2,true);  // Outer circle
+      path.moveTo(110,75);
+      path.arc(75,75,35,0,Math.PI,false);   // Mouth (clockwise)
+      path.moveTo(65,65);
+      path.arc(60,65,5,0,Math.PI*2,true);   // Left eye
+      path.moveTo(95,65);
+      path.arc(90,65,5,0,Math.PI*2,true);   // Right eye
+      ctx.stroke(path);
+    }
+  }
+</script>
+
+<!--..Moving the pen-->
+<script>
+  function draw(){
+    var canvas = document.getElementById('canvas');
+    if (canvas.getContext) {
+      var ctx = canvas.getContext('2d');
+
+      var path=new Path2D();
+      path.arc(75,75,50,0,Math.PI*2,true);  // Outer circle
+      path.moveTo(110,75);
+      path.arc(75,75,35,0,Math.PI,false);   // Mouth (clockwise)
+      path.moveTo(65,65);
+      path.arc(60,65,5,0,Math.PI*2,true);   // Left eye
+      path.moveTo(95,65);
+      path.arc(90,65,5,0,Math.PI*2,true);   // Right eye
+      ctx.stroke(path);
+    }
+  }
+</script>
+
+<!--..Lines-->
+<script type="text/javascript">
+  function drawShape() {
+    // get the canvas element using the DOM
+    var canvas = document.getElementById('mycanvas');
+    // make sure it doesn't execute when canvas isn't supported
+    if (canvas.getContext) {
+
+      // use getContext to use the canvas for drawing
+      var ctx = canvas.getContext('2d');
+
+      // filled triangle
+      ctx.beginPath();
+      ctx.moveTo(25,25);
+      ctx.lineTo(105,25);
+      ctx.lineTo(25,105);
+      ctx.fill();
+
+      // stroked triangle
+      ctx.beginPath();
+      ctx.moveTo(125,125);
+      ctx.lineTo(125,45);
+      ctx.lineTo(45,125);
+      ctx.closePath();
+      ctx.stroke();
+    }
+
+    else {
+      alert('you need safari or FF 1.5+ to see this demo')
+    }
+  }
+  </script>
+
+<!--..Arcs-->
+<script type="text/javascript">
+  function drawShape() {
+    // get the canvas element using the DOM
+    var canvas = document.getElementById('tutorial');
+    // make sure it doesn't execute when canvas isn't supported
+    if (canvas.getContext) {
+      // use getContext to use the canvas for drawing
+      var ctx = canvas.getContext("2d");
+
+      for(var i=0; i<4; i++) {
+        for(var j=0; j<3; j++) {
+          var path = new Path2D();
+          var x = 25 + j * 50;  // x coordinate
+          var y = 25 + i * 50;  // y coordinate
+          var radius = 20;  // arc radius
+          var startAngle = 0; // Starting point on circle
+          var endAngle = Math.PI + (Math.PI * j)/2; // End point on circle
+          var anticlockwise = i%2==0 ? false : true; // clockwise or anticlockwise
+
+          path.arc(x, y, radius, startAngle, endAngle, anticlockwise);
+
+          if (i>1) {
+            ctx.fill(path);
+          } else {
+            ctx.stroke(path);
+          }
+        }
+      }
+
+    }
+
+    else {
+      alert('you need safari or FF 1.5+ to see this demo')
+    }
+  }
+</script>
+
+<!--..Bezier and quadratic curves-->
+
+
+<!--.Tranformations-->
+<!--..Saving and Restoring State-->
+<!--drawing a set of consecutive rectangles-->
+<script>
+  function draw() {
+    var ctx = document.getElementById('canvas').getContext('2d');
+
+    ctx.fillReact(0,0,150,150);   // draw rectangle with default settings
+    ctx.save();                   // save the default state
+
+    ctx.fillStyle = '#09F';       // make changes to the setings
+    ctx.fillReact(15,15,120,120); // draw rectangle with new settings
+
+    ctx.save();                   // save current state
+    ctx.fillStyle = '#FFF';       // make changes to the setings
+    ctx.globalAlpha = 0.5;
+    
+  }
+</script>
+
+
+
+<!-- END reference- https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
