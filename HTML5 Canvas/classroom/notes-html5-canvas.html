@@ -721,29 +721,346 @@ It’s important to note that whatever transformations apply for all subsequent 
   }
 </script>
 
-<!--.Tranformations-->
-<!--..Saving and Restoring State-->
-<!--drawing a set of consecutive rectangles-->
+<!--..A demo of the miterLimit property-->
+<script type="text/javascript" src="">
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+    
+    // clear canvas
+    ctx.clearRect(0,0,150,150);
+    
+    // draw guides
+    ctx.strokeStyle = '#09f';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-5,50,160,50);
+    
+    // set line styles
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 10;
+    
+    // check input
+    if (document.getElementById('miterLimit').value.match(/\d+(\.\d+)?/)) {
+      ctx.miterLimit = parseFloat(document.getElementById('miterLimit').value);
+    } else {
+      alert('value must be a positive number');
+    }
+    
+    // draw lines
+    ctx.beginPath();
+    ctx.moveTo(0,100);
+    
+    for (var i=0;i<24;i++) {
+      var dy = i%2==0 ? 25 : -25;
+      ctx.lineTo(Math.pow(i,1.5)*2,75+dy);
+    }
+    ctx.stroke();
+    return false;
+  }
+</script>
+
+<!--..Using line dashes-->
+<script type="text/javascript" src="">
+  var ctx = document.getElementById('tutorial').getContext('2d');
+  var offset = 0;
+  
+  function draw() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.setLineDash([4,2]);
+    ctx.lineDashOffset = -offset;
+    ctx.strokeRect(10,10,100,100);
+  }
+  
+  function march() {
+    offset++;
+    if (offset>16) {
+      offset=0;
+    }
+    draw();
+    setTimeout(march,20);
+  }
+  
+  march();
+  
+</script>
+
+<!--****************-->
+<!--go through each as needed-->
+<!--****************-->
+
+<!--*Tranformations-->
+<!--.Saving and Restoring State-->
+<!--..A save and restore canvas state example-->
 <script>
   function draw() {
     var ctx = document.getElementById('canvas').getContext('2d');
 
-    ctx.fillReact(0,0,150,150);   // draw rectangle with default settings
-    ctx.save();                   // save the default state
+    ctx.fillRect(0,0,150,150);   // draw rectangle with default settings
+    ctx.save();   // save the default state
 
-    ctx.fillStyle = '#09F';       // make changes to the setings
-    ctx.fillReact(15,15,120,120); // draw rectangle with new settings
+    ctx.fillStyle = '#09F';   // make changes to the settings
+    ctx.fillRect(15,15,120,120);   // draw rectangle with new settings
 
-    ctx.save();                   // save current state
-    ctx.fillStyle = '#FFF';       // make changes to the setings
-    ctx.globalAlpha = 0.5;
+    ctx.save();   // save current state
+    ctx.fillStyle = '#FFF';   // make changes to the settings
+    ctx.globalAlpha = 0.5;  // set transparency
+    ctx.fillRect(30,30,90,90);   // draw rectangle with new settings
     
+    ctx.restore();    // restore previous state
+    ctx.fillRect(45,45,60,60);  // draw rectangle with restored settings
+    
+    ctx.restore();    // restore previous state
+    ctx.fillRect(60,60,30,30);  // draw rectangle with restored settings
   }
 </script>
 
+<!--.Translating-->
+<!--..A translate example-->
+<script>
+  function draw() {
+    var ctx = document.getElementById('canvas').getContext('2d');
 
+    for (var i=0;i<3;i++) {
+      for (var j=0;j<3;j++) {
+        ctx.save();   // save the default state
+        ctx.fillStyle = 'rgb('+(51*i)+','+(255-51*i)+',255)';   // make changes to the settings
+        ctx.translate(10+j*50,10+i*50);
+        ctx.fillRect(0,0,25,25);   // draw rectangle with new settings
+        ctx.restore();
+      }  
+    }
+  }
+</script>
+
+<!--.Rotating-->
+<!--..A rotate example-->
+<script>
+  function draw() {
+    var ctx = document.getElementById('canvas').getContext('2d');
+
+    // left rectangles, rotate from canvas origin 
+    ctx.save();   // save the default state
+    // blue rect
+    ctx.fillStyle = '#0995DD';   // set the settings
+    ctx.fillRect(30,30,100,100);
+    ctx.rotate((Math.PI/180)*25);
+    // grey rect
+    ctx.fillStyle = '#4D4E53';   // set the settings
+    ctx.fillRect(30,30,100,100);
+    ctx.restore();    // restore previous state
+    
+    // right rectangles, rotate from rectangular center 
+    ctx.save();   // save the default state
+    // draw blue rect
+    ctx.fillStyle = '#0995DD';
+    ctx.fillRect(150,30,100,100);
+    
+    ctx.translate(200,80);  // translate to rectangular center
+                            // x = x + 0.5 * width
+                            // y = y + 0.5 * height
+    ctx.rotate((Math.PI/180)*25); // rotate
+    ctx.translate(-200,-80);  // translate back
+    
+    // drae grey rect
+    ctx.fillStyle = '#4D4E53';
+    ctx.fillRect(150,30,100,100);
+  }
+</script>
+
+<!--.Scaling-->
+<!--..A scale example-->
+<script>
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+
+    // draw simple rectangel, but scale it 
+    ctx.save();   // save the default state
+    ctx.scale(10,3);
+    ctx.fillRect(1,10,10,10);
+    ctx.restore();    // restore previous state
+    
+    // mirror horizontally 
+    ctx.scale(-1,1);
+    ctx.font = '48px serif';
+    ctx.fillText("MDN",-135,120);
+  }
+</script>
+
+<!--.Transform-->
+<!--..A scale example-->
+<script>
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+
+    var sin = Math.sin(Math.PI/6);
+    var cos = Math.cos(Math.PI/6);
+    ctx.translate(100,100);
+    var c=0;
+    for(var i=0; i<=12; i++) {
+      c = Math.floor(255 / 12 * i);
+      ctx.fillStyle = "rgb(" + c + "," + c + "," + c + ")";
+      ctx.fillRect(0,0,100,10);
+      ctx.transform(cos,sin,-sin,cos,0,0);
+    }
+    ctx.setTransform(-1,0,0,1,100,100);
+    ctx.fillStyle = "rgba(255,128,255,0.5)";
+    ctx.fillRect(0,50,100,100);
+  }
+</script>
 
 <!-- END reference- https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial -->
+
+<!-->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-->
+
+<!-- .HTML5 Canvas Basics (cont.)-->
+<!-- ..saving and restoring canvas state -->
+
+<script>
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+
+    ctx.save();
+    ctx.fillStyle = 'blue';
+    ctx.translate(10,10);
+    ctx.fillRect(0,0,10,10);
+    ctx.restore();
+    
+    ctx.rotate(Math.PI/4);
+    ctx.translate(50,0);
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0,0,10,10);
+  }
+</script>
+
+////////////////////////////////////////
+
+<script>
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(0,0,50,50);
+    
+    ctx.fillStyle = 'green';
+    ctx.fillRect(100,100,10,10);
+    
+    ctx.fillStyle = 'green';
+    ctx.fillRect(200,10,20,20);
+  }
+</script>
+
+<!--OR-->
+
+<script>
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(0,0,50,50);
+    // save state with blue fill
+    ctx.save();
+    
+    ctx.fillStyle = 'green';
+    ctx.fillRect(100,100,10,10);
+    // restore to blue fill
+    ctx.restore();
+
+    ctx.fillRect(200,10,20,20);
+  }
+</script>
+
+<!-- ..meme maker programming quiz -->
+<!-- BEGIN reference- http://devhammer.net/blog/exploring-html5-canvas-part-4-transformations/ -->
+
+<script>
+  function draw() {
+    var ctx = document.getElementById('tutorial').getContext('2d');
+
+      function renderGrid(gridPixelSize,color) {
+        ctx.save();
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = color;
+        // horizontal grid lines
+        for(var i=0; i<=tutorial.height; i=i+gridPixelSize) {
+          ctx.beginPath();
+          ctx.moveTo(0,i);
+          ctx.lineTo(tutorial.width, i);
+          ctx.closePath();
+          ctx.stroke();
+        }
+        // vertical grid lines
+        for(var j=0; j<=tutorial.height; j=j+gridPixelSize) {
+          ctx.beginPath();
+          ctx.moveTo(j,0);
+          ctx.lineTo(j, tutorial.height);
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      
+      ctx.save(); // trans
+      renderGrid(20, "red"); // to keep grid in same place
+      //ctx.scale(2,2); // scale w large grid
+      ctx.translate(100,75); // trans
+      ctx.rotate(45*Math.PI/180);
+      ctx.translate(-100,-75); // trans
+      renderGrid(20, "green");
+      //ctx.transform(1,0,1,1,0,0);
+      ctx.setTransform(1,0,1,1,0,0);
+      //renderGrid(20, "green");
+      //ctx.scale(2,2); // scale w small grid
+      ctx.beginPath();
+      ctx.fillStyle = 'yellow';
+      ctx.strokeStyle = 'blue';
+      ctx.arc(100,75,50,0.25*Math.PI,1.75*Math.PI);
+      ctx.lineTo(100,75);
+      ctx.lineTo(135,110);
+      ctx.stroke();
+      ctx.fill();
+      ctx.restore();
+  }
+</script>
+
+<!-- ..saving and restoring the current context -->
+
+<!-- END reference- http://devhammer.net/blog/exploring-html5-canvas-part-4-transformations/ -->
+
+<!-->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>-->
+<script>
+var ctx = document.getElementById('tutorial').getContext('2d');
+
+      ctx.save(); // trans
+
+      ctx.font = "bold 36px impact"
+      ctx.fillStyle = 'white';
+      ctx.fillText("whats poppin!", 50, 40);
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 3;
+      ctx.strokeText("whats poppin!", 50, 40);
+      
+      ctx.beginPath();
+      ctx.fillStyle = 'yellow';
+      ctx.arc(100,100,50,0.25*Math.PI,1.75*Math.PI);
+      ctx.lineTo(100,100);
+      ctx.lineTo(135,135);
+      ctx.stroke();
+      ctx.fill();
+
+      ctx.restore();
+</script>>
+
+////////////////////////////
+
+<!-- BEGIN reference- https://gist.github.com/jwill/7482ccf83ccf869f3302 -->
+<!DOCTYPE>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>mememaker-simple</title>  
+</head>>
+</html>>
+
+<!-- END reference- https://gist.github.com/jwill/7482ccf83ccf869f3302 -->
 
 <!--codepen-->
 <!--HTML-->
