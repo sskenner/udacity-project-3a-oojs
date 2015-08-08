@@ -1052,13 +1052,114 @@ var ctx = document.getElementById('tutorial').getContext('2d');
 ////////////////////////////
 
 <!-- BEGIN reference- https://gist.github.com/jwill/7482ccf83ccf869f3302 -->
-<!DOCTYPE>
 <!DOCTYPE html>
 <html>
 <head>
-  <title>mememaker-simple</title>  
-</head>>
-</html>>
+  <title>mememaker-simple</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="mobile-web-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <style type="text/css">
+  /*is the type necessary?*/
+    #image-container {
+      display: flex;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <input type="file" id="file" />
+  </div>
+  <div id="image-container">
+    <canvas width="500" height="500"></canvas>
+    <div>
+      <span>top line:</span><br/>
+      <input id="topLineText" type="text"><br/>
+      <span>bottom line:</span><br/>
+      <input id="bottomLineText" type="text"><br/>
+      <button id="saveBtn">save</button>
+    </div>
+  </div>
+  <script>
+    function textChangeListener (evt) {
+      var id = evt.target.id;
+      var text = evt.target.value;
+      
+      if(id == "topLineText") {
+        window.topLineText = text;
+      } else {
+        window.bottomLineText = text;
+      }
+      
+      redrawMeme(window.imageSrc, window.topLineText, window.bottomLineText);
+    }
+    
+    function redrawMeme(image, topLine, bottomLine) {
+      // get Canvas2DContext
+      var canvas = document.querySelector('canvas');
+      var ctx = canvas.getContext("2d")
+// MY CODE HERE ///////////////////////////////////////////////////
+        if (image != null)
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          
+        // text attribute
+        ctx.font = '30pt impact';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 3;
+        ctx.fillStyle = 'white';
+        
+        if(topLine != null) {
+          ctx.fillText(topLine, canvas.width / 2, 40);
+          ctx.strokeText(topLine, canvas.width / 2, 40);
+        }
+        
+        if(bottomLine != null) {
+          ctx.fillText(bottomLine, canvas.width / 2, canvas.height - 20);
+          ctx.strokeText(bottomLine, canvas.width / 2, canvas.height - 20);
+        }
+    }
+    
+    function saveFile() {
+      window.open(document.querySelector('canvas').toDataURL());
+    }
+    
+    function handleFileSelect(evt) {
+      var canvasWidth = 500;
+      var canvasHeight = 500;
+      var file = evt.target.files[0];
+      
+      var reader = new FileReader();
+      reader.onload = function(fileObject) {
+        var data = fileObject.target.result;
+        
+        // create an image object
+        var image = new Image();
+        image.onload = function() {
+          
+          window.imageSrc = this;
+          redrawMeme(window.imageSrc, null, null);
+        }
+        
+        // set image data to background image
+        image.src = data;
+        console.log(fileObject.target.result);
+      };
+      reader.readAsDataURL(file)
+    }
+    
+    window.topLineText = "";
+    window.bottomLineText = "";
+    var input1 = document.getElementById('topLineText');
+    var input2 = document.getElementById('bottomLineText');
+    input1.oninput = textChangeListener;
+    input2.oninput = textChangeListener;
+    document.getElementById('file').addEventListener('change', handleFileSelect, false);
+    document.querySelector('button').addEventListener('click', saveFile, false);
+  </script>
+</body>
+</html>
 
 <!-- END reference- https://gist.github.com/jwill/7482ccf83ccf869f3302 -->
 
