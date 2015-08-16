@@ -1,0 +1,768 @@
+<!-- *HTML Canvas -->
+<!-- .Lesson 2: From Pixels to Animation -->
+<!-- ..Silent Film Vignette -->
+
+<!--BEGIN: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Manipulating_video_using_canvas-->
+<!-- ..Manipulating video using canvas -->
+<!--...the document content-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml-transitional.dtd"-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <style>
+      body {
+        background: black;
+        color:#CCCCCC;
+      }
+      #c2 {
+        background-image: url(foo.png);
+        background-repeat: no-repeat;
+      }
+      div {
+        float: left;
+        border: 1px solid #444444;
+        padding: 10px;
+        margin: 10px;
+        background:#3B3B3B;
+      }
+    </style>
+    <script type="text/javascript;version=1.8" src="main.js"></script>
+  </head>
+  
+  <body onload="processor.doLoad()">
+    <div>
+      <video id="video" src="video.ogv" controls="true"/>
+    </div>
+    <div>
+      <canvas id="c1" width="160" height="96"/>
+      <canvas id="c2" width="160" height="96"/>
+    </div>
+  </body>
+</html>
+<!--//////////////////////////////////////-->
+
+<!--...the javascript code-->
+<!--....initializing the chroma-key player-->
+<script type="text/javascript" src="">
+  doLoad: function() {
+    this.video = document.getElementById("video");
+    this.c1 = document.getElementById("c1");
+    this.ctx1 = this.c1.getContext("2d");
+    this.c2 = document.getElementById("c2");
+    this.ctx2 = this.c2.getContext("2d");
+    let self = this;
+    this.video.addEventListener("play", function() {
+      self.width = self.video.videoWidth / 2;
+      self.height = self.video.videoHeight / 2;
+      self.timerCallback();
+    }, false);
+  },
+</script>
+
+<!--....the timer callback-->
+<script type="text/javascript" src="">
+  //..cont from above
+  timerCallback: function() {
+    if (this.video.paused || this.video.ended) {
+      return;
+    }
+    this.computeFrame();
+    let self = this;
+    setTimeout(function() {
+      self.timerCallback();
+    }, 0);
+  },
+</script>
+
+<!--....manipulating the video frame data-->
+<script type="text/javascript" src="">
+  //..cont from above
+  computeFrame: function() {
+    this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+    let frame = this.ctx1.getImageData(0, 0, this.width, this.height);
+    let l = frame.data.length / 4;
+    
+    for (let i = 0; i < l; i++) {
+      let r = frame.data[i*4+0];
+      let g = frame.data[i*4+1];
+      let b = frame.data[i*4+2];
+      if (g > 100 && r > 100 && b < 43)
+        frame.data[i*4+3] = 0;
+    }
+    this.ctx2.putImageData(frame, 0, 0);
+    return;
+  }
+</script>
+
+<!--END: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Manipulating_video_using_canvas-->
+
+<!--..canvas 2D image data/imagedata quiz solution-->
+
+<!--BEGIN: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas-->
+<!--...Pixel manipulation with canvas-->
+<!--....The ImageData object-->
+<!--for ex, to read th blue component's value from the pixel at column 200, row 50 in the image: -->
+<script type="text/javascript" src="">
+  blueComponent = imageData.data[((50*(imageData.width*4)) + (200*4)) + 2];
+</script>
+
+<!--can access the size of the pixel array in bytes by reading the Uint8ClampedArray.length attribute: -->
+<script type="text/javascript" src="">
+  var numBytes = imageData.data.length
+</script>
+
+<!--....Creating an ImageData object-->
+<script type="text/javascript" src="">
+  var myImageData = ctx.createImageData(width, height);
+</script>
+<!--OR-->
+<script type="text/javascript" src="">
+  var myImageData = ctx.createImageData(anotherImageData);
+</script>
+
+<!--....getting the pixel data for a context-->
+<script type="text/javascript" src="">
+  var myImageData = ctx.getImageData(left, top, width, height);
+</script>
+
+<!--....A color picker-->
+<script type="text/javascript" src="">
+  var img = new Image();
+  img.src = 'https://mdn.mozillademos.org/files/5397/rhino.jpg';
+  var canvas = document.getElementById('canvas');
+  var ctx = canvas.getContext('2d');
+  // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Basic_usage
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0);
+    img.style.display = 'none';
+  };
+  var color = document.getElemntById('color');
+  function pick(event) {
+    var x = event.layerX;
+    var y = event.layerY;
+    var pixel = ctx.getImageData(x,y,1,1);
+    var data = pixel.data;
+    var rgba = 'rgba(' + data[0] + ',' + data[1] + ',' + data[2] + ',' + data[3] + ')';
+    color.style.background =  rgba;
+  }
+  canvas.addEventListener('mousemove', pick);
+</script>
+
+<!--...Painting pixel data into a context-->
+<script type="text/javascript" src="">
+  ctx.putImageData(myImageData, dx, dy);
+</script>
+<!--//////////////////////////////-->
+
+<script type="text/javascript" src="">
+  ctx.putImageData(myImageData, 0, 0);
+</script>
+
+<!--....Grayscaling and inverting colors-->
+<script type="text/javascript" src="">
+  var img = new Image();
+  img.src = 'http://mdn.mozillademos.org/files/5397/rhino.jpg';
+  img.onload = function() {
+    draw(this);
+  };
+  
+  function draw(img) {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+    img.style.display = 'none';
+    var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var data = imageData.data;
+    
+    var invert = function() {
+      for (var i = 0; i < data.length; i += 4) {
+        data[i]     = 255 - data[i];  // red
+        data[i + 1] = 255 - data[i + 1];  // green
+        data[i + 2] = 255 - data[i + 2];  // blue
+      }
+      ctx.putImageData(imageData,0,0);
+    };
+    
+    var invertbtn = document.getElementById('invertbtn');
+    invertbtn.addEventListener('click', ivnvert);
+    var grayscalebtn = document.getElementById('grayscalebtn');
+    grayscalebtn.addEventListener('click', grayscale);
+  }
+</script>
+
+<!--....Zooming and anti-alising-->
+<script type="text/javascript" src="">
+  zoomctx.drawImage(canvas,
+                  Math.abs(x - 5), Math.abs(y - 5),
+                  10, 10, 0, 0, 200, 200);
+</script>
+
+<script type="text/javascript" src="">
+  var img = new Image();
+  img.src = 'http://mdn.mozillademos.org/files/5397/rhino.jpg';
+  img.onload = function() {
+    drae(this);
+  };
+  
+  function draw(img) {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+    img.style.display = 'none';
+    var zoomctx = document.getElementById('zoom').getContext('2d');
+    
+    var smoothbth = document.getElementById('smoothbth');
+    var toggleSmoothing = function(event) {
+      zoomctx.imageSmoothingEnabled = this.checked;
+      zoomctx.mozImageSmoothingEnabled = this.checked;
+      zoomctx.webkitImageSmoothingEnabled = this.checked;
+      zoomctx.msImageSmoothingEnabled = this.checked;
+    };
+    smoothbth.addEventListener('change', toggleSmoothing);
+    
+    var zoom = function(event) {
+      var x = event.layerX;
+      var y = event.layerY;
+      zoomctx.drawImage(canvas,
+                        Math.abs(x - 5),
+                        Math.abs(y - 5),
+                        10, 10,
+                        0, 0,
+                        200, 200);
+    };
+    canvas.addEventListener('mousemove', zoom);
+  }
+  
+</script>
+
+
+<!--END: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Pixel_manipulation_with_canvas-->
+
+<!--/////////////////////////////////////-->
+
+<!--BEGIN: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData-->
+<!--...ex. understanding putImageData-->
+<!--HTML-->
+<canvas id="canvas"></canvas>
+<!--JS-->
+<script type="text/javascript" src="">
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  
+  function putImageData(ctx, imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+    var data = imageData.data;
+    var height = imageData.height;
+    var width = imageData.width;
+    dirtyX = dirtyX || 0;
+    dirtyY = dirtyY || 0;
+    dirtyWidth = dirtyWidth !== undefined? dirtyWidth: width;
+    dirtyHeight = dirtyHeight !== undefined? dirtyHeight: height;
+    var limitBottom = dirtyY + dirtyHeight;
+    var limitRight = dirtyX + dirtyWidth;
+    for (var y = dirtyY; y < limitBottom; y++) {
+      for (var x = dirtyX; x < limitRight; x++) {
+        var pos = y * width + x;
+        ctx.fillStyle = 'rgba(' + data[pos*4+0]
+                          + ',' + data[pos*4+1]
+                          + ',' + data[pos*4+2]
+                          + ',' + (data[pos*4+3]/255) + ')';
+        ctx.fillRect(x + dx, y + dy, 1, 1);
+      }
+    }
+  }
+  
+  // draw content onto the canvas
+  ctx.fillRect(0,0,100,100);
+  // create an ImageData object from it
+  var imagedata = ctx.getImageData(0,0,100,100);
+  // use the putImageData function that illustrates how putImageData works
+  putImageData(ctx,imagedata, 150, 0, 50, 50, 25, 25);
+  
+</script>
+
+<!--//actual code in browser///////////////////-->
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <!--<title>canvas tutorial:simple ex.</title>-->
+    <script type="application/javascript">
+
+      function drawShape() {
+        var ctx = document.getElementById('canvas').getContext('2d');
+
+        function putImageData(ctx, imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
+          var data = imageData.data;
+          var height = imageData.height;
+          var width = imageData.width;
+          dirtyX = dirtyX || 0;
+          dirtyY = dirtyY || 0;
+          dirtyWidth = dirtyWidth !== undefined? dirtyWidth: width;
+          dirtyHeight = dirtyHeight !== undefined? dirtyHeight: height;
+          var limitBottom = dirtyY + dirtyHeight;
+          var limitRight = dirtyX + dirtyWidth;
+          for (var y = dirtyY; y < limitBottom; y++) {
+            for (var x = dirtyX; x < limitRight; x++) {
+              var pos = y * width + x;
+              ctx.fillStyle = 'rgba(' + data[pos*4+0]
+                                + ',' + data[pos*4+1]
+                                + ',' + data[pos*4+2]
+                                + ',' + (data[pos*4+3]/255) + ')';
+              ctx.fillRect(x + dx, y + dy, 1, 1);
+            }
+          }
+        }
+        // draw content onto the canvas
+        ctx.fillRect(0,0,100,100);
+        // create an ImageData object from it
+        var imagedata = ctx.getImageData(0,0,100,100);
+        // use the putImageData function that illustrates how putImageData works
+        putImageData(ctx, imagedata, 150, 0, 50, 50, 25, 25);
+      }
+    </script>
+  </head>
+  <body onload="drawShape();">
+    <canvas id="canvas" width="300" height="300"></canvas>
+  </body>
+</html>
+
+<!--END: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData-->
+
+<!-- ..Canvas 2D Image data -->
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+    <canvas width="400" height="400"></canvas>
+    
+    <script type="text/javascript" src="">
+      var canvas = document.querySelector("canvas");
+      var ctx = canvas.getContext("2d");
+      // get image data object
+      var data = ctx.getImageData(0,0,400,400);
+      
+      function paintGreen(imageData) {
+        var numPixels = imageData.data.length /4;
+        for (var i=0; i<numPixels; i++) {
+          if (i%10 === 0) {
+            imageData.data[i*4+1] = 255;
+            imageData.data[i*4+3] = 255;
+          }
+        }
+        ctx.putImageData(imageData,0,0);
+      }
+      paintGreen(data);
+    </script>
+  </body>
+</html>
+
+<!-- ..Grayscale Quiz -->
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+    <canvas width="640" height="426"></canvas>
+
+    <script type="text/javascript">
+      var canvas = document.querySelector("canvas");
+      var ctx = canvas.getContext("2d");
+
+      var image = new Image();
+      image.onload = function() {
+        ctx.drawImage(image, 0, 0);
+        makeGrayScale();
+      }
+
+      //image.src = "vincealongi-seascape.jpg"
+      image.src = "fire-hands.jpg";
+
+      var makePixelGrayScale = function (r, g, b, a) {
+        var y = (0.3 * r) + (0.59 * g) + (0.11 * b);
+        return {r: y, g:y, b: y, a:y};
+      }
+
+      function makeGrayScale() {
+        var r, g, b, a;
+        var imageData = ctx.getImageData(0, 0, 640, 426);
+        var numPixels = imageData.data.length /4;
+        for (var i = 0; i < numPixels; i++) {
+          r = imageData.data[i * 4 + 0];
+          g = imageData.data[i * 4 + 1];
+          b = imageData.data[i * 4 + 2];
+          a = imageData.data[i * 4 + 3];
+          pixel = makePixelGrayScale(r, g, b, a);
+          imageData.data[i * 4 + 0] = pixel.r;
+          imageData.data[i * 4 + 1] = pixel.g;
+          imageData.data[i * 4 + 2] = pixel.b;
+          imageData.data[i * 4 + 3] = pixel.a;
+        }
+        ctx.putImageData(imageData, 0, 0);
+      }
+    </script>
+  </body>
+</html>
+
+<!-- ..Playing Videos with Canvas -->
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+  <video id="v" controls loop src="HOTRODS.mp4">
+    </video>
+    <canvas id = "c"></canvas>
+
+    <script type="text/javascript">
+      var canvas = document.querySelector("canvas");
+      var ctx = canvas.getContext("2d");
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        var v = document.querySelector('#v');
+        var canvas = document.querySelector('#c');
+        var ctx = canvas.getContext('2d');
+        
+        v.addEventListener('loadedmetadata', function() {
+          canvas.width = this.videoWidth;
+          canvas.height = this.videoHeight;
+        });
+        
+        var draw = function() {
+          canvas.getContext('2d').drawImage(v, 0, 0);
+        }
+        
+        v.addEventListener('play', function() {
+          if (v.paused || v.ended) return;
+            draw();
+        })
+      });
+    </script>
+  </body>
+</html>
+
+<!--BEGIN: https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame-->
+
+<!-- ..Return value -->
+<script type="text/javascript">
+  var start = null;
+  var element = document.getElementById("someelementyouwanttoanimate");
+  
+  function step(timestamp) {
+    if (!start) start = timestamp;
+    var progress = timestamp - start;
+    element.style.left = Math.min(progress/10, 200) + "px";
+    if (progress < 2000) {
+      window.requestAnimationFrame(step);
+    }
+  }
+  
+  window.requestAnimationFrame(step);
+</script>
+
+<!--END: https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame-->
+
+<!--BEGIN: http://www.kirupa.com/html5/animating_with_requestAnimationFrame.htm-->
+<script type="text/javascript">
+  var requestAnimationFrame = window.requestAnimationFrame ||
+                              window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame ||
+                              window.msRequestAnimationFrame;
+</script>
+
+<!-- ..Simple requestAnimationFrame Example -->
+<script type="text/javascript">
+  var mainCanvas = document.getElementById("myCanvas");
+  var mainContent = mainCanvas.getContext('2d');
+  
+  var canvasWidth = mainCanvas.width;
+  var canvasHeight = mainCanvas.height;
+  
+  var requestAnimationFrame = window.requestAnimationFrame ||
+                              window.mozRequestAnimationFrame ||
+                              window.webkitRequestAnimationFrame ||
+                              window.msRequestAnimationFrame;
+                              
+  // this array contains a reference to every circle that will be created
+  var circles = new Array();
+  
+  // the circle constructor is responsible for creating the circle objects and defining the various properties they have
+  function Circle(angle, sign, radius, rotationRadius, initialX, initialY) {
+    this.angle = angle;
+    this.sign = sign;
+    this.radius = radius;
+    this.rotationRadius = rotationRadius;
+    this.initialX = initialX;
+    this.initialY = initialY;
+    this.inrementer = .01 + Math.random() * .1;
+  }
+  
+  Circle.prototype.update = function() {
+    
+    this.angle += this.incrementer;
+    
+    this.currentX = this.initialX + this.rotationRadius * Math.cos(this.angle);
+    this.currentY = this.initialY + this.rotationRadius * Math.cos(this.angle);
+    
+    if(this.angle >= (Math.PI * 2)) {
+      this.angle = 0;
+      this.incrementer = .01 + Math.random() * .1;
+    }
+    
+    // the following is responsible for actually drawing the circle on the screen
+    mainContext.beginPath();
+    mainContext.arc(this.currentX, this.currentY, this.radius, 0, Math.PI * 2, false);
+    mainContext.closePath();
+    mainContext.fillStyle = 'rgba(177, 0, 129, .1)';
+    mainContext.fill();
+  };
+  
+  // the following creates the circles that we end up seeing
+  function createCircles() {
+    // change the range of this loop to adjust the number of circles that you see
+    for(var i = 0; i < 50; i++) {
+      var radius = 5 + Math.random() * 40;
+      var initialX = canvasWidth /2;
+      var initialY = canvasHeight /2;
+      var rotationRadius = 1 + Math.random() * 30;
+      var angle = Math.random() * 2 * Math.PI;
+      
+      var signHelper = Math.floor(Math.random() * 2);
+      var sign;
+      
+      // randomly specify whether the circle will be rotating clockwise or counterclockwise
+      if (signHelper == 1) {
+        sign = -1;
+      } else {
+        sign = 1;
+      }
+      
+      // create the circle object
+      var circle = new Circle(angle, sign, radius, rotationRadius, initialX, initialY);
+      circles.push(circle);
+    }
+    
+    // call the draw function approximately 60 times a second
+    requestAnimationFrame(draw);
+  }
+  
+  createCircles();
+  
+  function draw() {
+    mainContext.clearRect(0, 0, canvasWidth, canvasHeight);
+    mainContext.fillStyle = '#F6F6F6';
+    mainContext.clearRect(0, 0, canvasWidth, canvasHeight);
+    
+    for(var i = 0; i < circles.length; i++) {
+      var circle = circles[i];
+      circle.update();
+    }
+    
+    // call the draw function again!
+    requestAnimationFrame(draw);
+  }
+</script>
+
+
+<!--BEGIN: http://www.kirupa.com/snippets/examples/letter_cycler_slower.htm-->
+<script type="text/javascript">
+  var letter = document.querySelector("#letter");
+  var framesPerSecond = 10;
+  
+  var requestAnimationFrame = window.requstAnimationFrame || 
+                              window.mozRequstAnimationFrame ||
+                              window.webkitRequstAnimationFrame ||
+                              window.msRequstAnimationFrame;
+
+  var letters = "abcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()-=_+".split('');
+  
+  function cycleLetter() {
+    setTimeout(function() {
+      requestAnimationFrame(cycleLetter);
+      
+      var l = letters[Math.floor(Math.random() * letters.length)];
+    letter.textContent = l;
+    
+    }, 1000 / framesPerSecond);
+  }
+  cycleLetter();
+</script>
+
+<!--END: http://www.kirupa.com/snippets/examples/letter_cycler_slower.htm-->
+
+<!--END: http://www.kirupa.com/html5/animating_with_requestAnimationFrame.htm-->
+
+<!--BEGIN: http://creativejs.com/resources/requestanimationframe/-->
+
+<script type="text/javascript" src="">
+  function draw() {
+    // drawing code goes here
+  }
+  setInterval(draw, 100)
+  
+  // -- OR --
+  
+  function draw() {
+    setTimeout(draw, 100);
+    // drawing code goes here
+  }
+  draw();
+  
+// ..Frame rate and setInterval
+
+  // 1s = 1000ms (remember that setInterval and setTimeout run on milliseconds)
+  // 1000ms / 60(fps) = 16.7ms .. ~17ms
+
+  setInterval(function() {
+    animateEverything();
+  }, 17);
+  
+// ..requestAnimationFrame to the rescue!
+  function draw() {
+    requestAnimationFrame(draw);
+    // drawing code goes here
+  }
+  draw();
+  
+// -- OR --
+  
+  var fps = 15;
+  function draw() {
+    setTimeout(function() {
+      requestAnimationFrame(draw);
+      // drawing code goes here
+    }, 1000 / fps);
+  }
+  
+// -- OR --
+  var time;
+  function draw() {
+    requestAnimationFrame(draw);
+    var now = new Date().getTime(),
+      dt = now - (time || now);
+    
+    time = now;
+    
+    // drawing code goes here... for example updatin an 'x' position:
+    this.x += 10 * dt; // invrease 'x' by 10 units per millisecond
+  }
+  
+</script>
+
+<!--BEGIN: http://jsfiddle.net/wMkJg/-->
+<!--HTML-->
+<div id="ball"></div>
+<!--// -------------------------------------------------------------->
+
+<!--CSS-->
+#ball {
+  background: red;
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  position: relative;
+  left: 50%;
+  margin-left: -25px;
+}
+<!--// -------------------------------------------------------------->
+
+<!--JS-->
+<script type="text/javascript" src="">
+(function() {
+  var lastTime = 0;
+  var vandors = ['ms', 'moz', 'webkit', 'o'];
+  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
+                              || window.[vendors[x]+'CancelRequestAnimationFrame'];
+  }
+  
+  if (!window.requestAnimationFrame)
+    window.requestAnimationFrame = function(callback, element) {
+    var currTime = new Date().getTime();
+    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+    var id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
+    lastTime = currTime + timeToCall;
+    retun id;
+  };
+  
+  if (!window.cancelAnimationFrame)
+    window.cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+    };
+}());
+
+// Properties --------------------------------------------------------
+var ball = $('#ball');
+var xMin = 0;
+var xMax = $(window).height() - ball.height();
+var pos = 0;
+var dir = 1;
+var speed = 8;
+var fps = 60;
+var interval = 1000 / fps;
+
+// Animation Logic ---------------------------------------------------
+function draw() {
+  setTimeout(function() {
+    window.requestAnimationFrame(draw);
+    
+    pos = ball.position().top;
+    if (pos > xMax || pos < xMin) {
+      dir *= -1;
+    }
+    
+    pos += (dir * speed);
+    ball.css('top', pos + 'px');
+  }, interval);
+}
+
+draw();
+
+</script>
+
+<!--END: http://jsfiddle.net/wMkJg/-->
+
+
+<!--BEGIN: https://www.youtube.com/watch?t=110&v=XAqIpGU8ZZk-->
+<!--..GDC 2012: From Console to Chrome-->
+<!--Topics will include cutting edge HTML5 APIs, writing high performance Javascript, and profiling / debugging tools.-->
+
+<!--BEGIN: http://www.html5rocks.com/en/tutorials/websockets/basics/-->
+<!--..WebSockets/basics-->
+<script type="text/javascript" src="">
+  var connection = new WebSocket('ws://html5rocks.websocket.org/echo', ['soap', 'xmpp']);
+  
+  // when the connection is open, send some data to the server
+  connection.onopen = function() {
+    connection.send('Ping'); // send the msg 'Ping' to the server
+  };
+  
+  // log errors
+  connection.onerror = function(error) {
+    console.log('WebSocket Error' + error);
+  };
+  
+  // log messages from the server
+  connection.onmessage = function(e) {
+    console.log('Server: ' + e.data);
+  };
+// .Communicating with the server
+  // sending string
+  connection.send('your message');
+  
+  // sending canvas ImageData as ArrayBuffer
+  var img = canvas_context.getImageData(0, 0, 400, 320);
+  var binary = new Uint8Array(img.data.length);
+  for (var i = 0; i < img.data.length; i++) {
+    binary[i] = img.data[i];
+  }
+  connection.send(binary.buffer);
+  
+  // sending file as Blob
+  var file = dicument.querySelector('input[type="file"]').files[0];
+  connection.send(file);
+</script>
+
+<!--END: http://www.html5rocks.com/en/tutorials/websockets/basics/-->
+
+<!--END: https://www.youtube.com/watch?t=110&v=XAqIpGU8ZZk-->
+
+<!--END: http://creativejs.com/resources/requestanimationframe/-->
